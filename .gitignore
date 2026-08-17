@@ -4,3 +4,14 @@ node_modules/
 dist/
 build/
 *.log
+.claude/
+.bash_profile
+.bashrc
+.gitconfig
+.mcp.json
+.profile
+.ripgreprc
+.vscode/
+.zprofile
+.zshrc
+.idea/
