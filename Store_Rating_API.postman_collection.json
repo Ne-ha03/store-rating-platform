@@ -1,0 +1,422 @@
+{
+  "info": {
+    "_postman_id": "store-rating-api-collection",
+    "name": "Store Rating Platform API",
+    "description": "Complete API collection for the Store Rating Platform with authentication and all endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "store_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Signup",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.token);",
+                  "    pm.environment.set('user_id', jsonData.user.id);",
+                  "    console.log('Token saved:', jsonData.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john{{$timestamp}}@example.com\",\n  \"address\": \"123 Main Street, Downtown\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/signup",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "signup"]
+            },
+            "description": "Register a new user account. Creates a regular 'user' role by default."
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('auth_token', jsonData.token);",
+                  "    pm.environment.set('user_id', jsonData.user.id);",
+                  "    console.log('Login successful. Token saved.');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with email and password. Returns JWT token and user information."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"SecurePass123!\",\n  \"newPassword\": \"NewSecure456!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "password"]
+            },
+            "description": "Update password for authenticated user. Requires current password verification."
+          },
+          "response": []
+        }
+      ],
+      "description": "User authentication endpoints (signup, login, password management)"
+    },
+    {
+      "name": "User Stores",
+      "item": [
+        {
+          "name": "List Stores",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    if (jsonData.length > 0) {",
+                  "        pm.environment.set('store_id', jsonData[0].id);",
+                  "        console.log('First store ID saved:', jsonData[0].id);",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/stores?search=",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stores"],
+              "query": [
+                {
+                  "key": "search",
+                  "value": "",
+                  "description": "Search by store name or address"
+                }
+              ]
+            },
+            "description": "Get list of all stores with average ratings and your personal rating (if any). Supports search filtering."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Rating",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/stores/{{store_id}}/rating",
+              "host": ["{{base_url}}"],
+              "path": ["api", "stores", "{{store_id}}", "rating"]
+            },
+            "description": "Submit or update a rating for a store (1-5 stars). Uses upsert logic."
+          },
+          "response": []
+        }
+      ],
+      "description": "User-level store browsing and rating endpoints"
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "dashboard"]
+            },
+            "description": "Get dashboard statistics: total users, stores, and ratings. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Create User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('user_id', jsonData.id);",
+                  "    console.log('New user created with ID:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Created User\",\n  \"email\": \"adminuser{{$timestamp}}@example.com\",\n  \"address\": \"456 Oak Avenue, Uptown\",\n  \"password\": \"StrongPass789!\",\n  \"role\": \"user\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/users",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"]
+            },
+            "description": "Create a new user with specified role. Roles: 'admin', 'user', 'owner'. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "List Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users?name=&email=&address=&role=&sortBy=name&order=asc",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users"],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "",
+                  "description": "Filter by user name"
+                },
+                {
+                  "key": "email",
+                  "value": "",
+                  "description": "Filter by email"
+                },
+                {
+                  "key": "address",
+                  "value": "",
+                  "description": "Filter by address"
+                },
+                {
+                  "key": "role",
+                  "value": "",
+                  "description": "Filter by role (admin, user, owner)"
+                },
+                {
+                  "key": "sortBy",
+                  "value": "name",
+                  "description": "Sort column (name, email, address, role)"
+                },
+                {
+                  "key": "order",
+                  "value": "asc",
+                  "description": "Sort order (asc or desc)"
+                }
+              ]
+            },
+            "description": "List all users with optional filters and sorting. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Get User Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "users", "{{user_id}}"]
+            },
+            "description": "Get detailed information about a specific user. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Store",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.environment.set('store_id', jsonData.id);",
+                  "    console.log('New store created with ID:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Amazing Coffee Cafe Shop\",\n  \"email\": \"cafe{{$timestamp}}@example.com\",\n  \"address\": \"789 Park Street, Downtown District\",\n  \"ownerId\": null\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/stores",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stores"]
+            },
+            "description": "Create a new store. Store name: 20-60 chars. Can optionally assign to an owner user. Admin only."
+          },
+          "response": []
+        },
+        {
+          "name": "List Stores",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/stores",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "stores"]
+            },
+            "description": "List all stores in the system. Admin only."
+          },
+          "response": []
+        }
+      ],
+      "description": "Admin-only endpoints for user and store management"
+    }
+  ]
+}
